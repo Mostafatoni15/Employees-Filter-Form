@@ -1,0 +1,166 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Home</title>
+    </h:head>
+    <h:body>
+
+        <h:outputStylesheet>
+            /* Center the table content */
+            .data-table th, 
+            .data-table td {
+            text-align: center !important;
+            vertical-align: middle !important; /* Ensures vertical centering */
+            }
+
+            /* Center dropdowns and input fields */
+            .data-table select, 
+            .data-table input {
+            display: block;
+            margin: auto;
+            text-align: center;
+            }
+
+            /* Center the entire container */
+            .center-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* Corrected from 'top' */
+            align-items: center;
+            height: 100vh;
+            padding-top: 20px; /* Add padding for spacing */
+            }
+
+            /* Ensure table is centered */
+            .data-table {
+            width: 80%;
+            margin: auto; /* Centers the table horizontally */
+            text-align: center;
+            }
+
+            /* Fix SelectOneMenu inside table */
+            .data-table .ui-selectonemenu {
+            width: 100% !important; /* Ensures dropdown fits column */
+            display: flex;
+            align-items: center;
+            }
+
+            /* Fix alignment of SelectOneMenu elements */
+            .data-table .ui-selectonemenu-label {
+            text-align: center !important;
+            display: block;
+            width: 100%;
+            }
+
+            /* Fix SelectOneMenu dropdown arrow alignment */
+            .data-table .ui-selectonemenu-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            }
+        </h:outputStylesheet>
+
+
+        <div class="center-container">
+            <h:form id="employeesForm">
+                <p:growl id="growl" showDetail="true"/>
+                <p:dataTable id="searchTable" value="#{employeeBean.searchList}" var="searchRow" selection="#{employeeBean.selectedSearchRows}" rowKey="#{searchRow}" 
+                             style="width: 800px; text-align: center;" styleClass="data-table">
+
+                    <p:column selectionMode="multiple" style="width: 5%;" />
+
+                    <p:column headerText="Choose Department">
+                        <p:selectOneMenu value="#{searchRow.department}" filter="true" filterMatchMode="contains">
+                            <f:selectItem itemLabel="Select Department" itemValue="" />
+                            <f:selectItem itemValue="Manager" itemLabel="Manager" />
+                            <f:selectItem itemValue="FrontEnd" itemLabel="FrontEnd" />
+                            <f:selectItem itemValue="BackEnd" itemLabel="BackEnd" />
+                            <f:selectItem itemValue="Tester" itemLabel="Tester" />
+                            <f:selectItem itemValue="HR" itemLabel="HR" />
+                            <f:selectItem itemValue="IT" itemLabel="IT" />
+                        </p:selectOneMenu>
+                    </p:column>
+                    
+                    <p:column headerText="Enter Email">
+                        <p:inputText value="#{searchRow.email}" />
+                    </p:column>
+
+                    <p:column headerText="Enter Salary">
+
+                        <h:outputText id="showRange" value="#{searchRow.minSalary} - #{searchRow.maxSalary}" style="font-weight: normal; font-size: small ; margin-bottom: 5px;" />
+                            
+                        <h:inputHidden id="minSalary" value="#{searchRow.minSalary}" />
+                        <h:inputHidden id="maxSalary" value="#{searchRow.maxSalary}" />
+                        
+                        <p:slider for="minSalary,maxSalary" display="showRange" range="true" step="50" minValue="0" maxValue="500" style="width: 220px" />
+                    </p:column>
+
+                </p:dataTable><br/>
+
+                <p:toolbar style="width: 800px; margin: auto;">
+                    <p:toolbarGroup align="left">
+                        <p:commandButton value="Search" action="#{employeeBean.searchEmployees()}" process="searchTable @this" update="employeesPanel growl searchTable"/> <p:spacer width="5"/>
+                        <p:commandButton value="Add Row" actionListener="#{employeeBean.addSearchRow}" process="@this" update="searchTable growl"/> <p:spacer width="5"/>
+                        <p:commandButton value="Delete" actionListener="#{employeeBean.deleteSearchRows}" update="searchTable growl"/>
+                    </p:toolbarGroup>
+
+                    <p:toolbarGroup align="right">
+                        <p:commandButton value="Create Employee" onclick="PF('createEmployeeDialog').show();" />
+                    </p:toolbarGroup>
+                </p:toolbar><br/>
+
+                <p:outputPanel id="employeesPanel">
+                    <p:dataTable id="employeesTable" value="#{employeeBean.employees}" var="emps" rendered="#{employeeBean.employees != null and not empty employeeBean.employees}"
+                                 sortMode="single" style="width: 800px; text-align: center;" styleClass="data-table">
+                        <p:column headerText="ID" sortBy="#{emps.id}" style="width: 5%;">
+                            <h:outputText value="#{emps.id}" />
+                        </p:column>
+                        <p:column headerText="Name" sortBy="#{emps.name}">
+                            <h:outputText value="#{emps.name}" />
+                        </p:column>
+                        <p:column headerText="Email" sortBy="#{emps.email}">
+                            <h:outputText value="#{emps.email}" />
+                        </p:column>
+                        <p:column headerText="Department" sortBy="#{emps.department}">
+                            <h:outputText value="#{emps.department}" />
+                        </p:column>
+                        <p:column headerText="Salary" sortBy="#{emps.salary}">
+                            <h:outputText value="#{emps.salary}" />
+                        </p:column>
+                    </p:dataTable>
+                </p:outputPanel>
+
+
+                <p:dialog id="createEmpDialog" header="Create Employee" widgetVar="createEmployeeDialog" modal="true" resizable="false">
+                    <p:panelGrid columns="2">
+                        <h:outputLabel for="name" value="Name:" />
+                        <p:inputText id="name" value="#{employeeBean.newEmployee.name}" />
+
+                        <h:outputLabel for="email" value="Email:" />
+                        <p:inputText id="email" value="#{employeeBean.newEmployee.email}" />
+
+                        <h:outputLabel for="department" value="Department:" />
+                        <p:selectOneMenu id="department" value="#{employeeBean.newEmployee.department}" filter="true" filterMatchMode="contains">
+                            <f:selectItem itemLabel="Select Department" itemValue="" />
+                            <f:selectItem itemValue="Manager" itemLabel="Manager" />
+                            <f:selectItem itemValue="FrontEnd" itemLabel="FrontEnd" />
+                            <f:selectItem itemValue="BackEnd" itemLabel="BackEnd" />
+                            <f:selectItem itemValue="Tester" itemLabel="Tester" />
+                            <f:selectItem itemValue="HR" itemLabel="HR" />
+                            <f:selectItem itemValue="IT" itemLabel="IT" />
+                        </p:selectOneMenu>
+
+                        <h:outputLabel for="salary" value="Salary:" />
+                        <p:inputText id="salary" value="#{employeeBean.newEmployee.salary}" />
+                    </p:panelGrid>
+
+                    <p:commandButton value="Save" action="#{employeeBean.createEmployee}" process="@form" update="createEmpDialog growl" oncomplete="PF('createEmployeeDialog').hide();" />
+                </p:dialog>
+            </h:form>
+        </div>
+    </h:body>
+</html>
+
